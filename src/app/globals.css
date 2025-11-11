@@ -24,3 +24,78 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ─── Mentrogress Metal Background ────────────────────────── */
+:root {
+  --metal-bg1: #0a0a0b; /* near-black */
+  --metal-bg2: #141519; /* deep steel */
+  --metal-sheen1: rgba(255, 255, 255, 0.06);
+  --metal-sheen2: rgba(255, 255, 255, 0.025);
+}
+
+/* Fixed, low-cost layered gradients + subtle vignette */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    /* brushed steel diagonal lines (very soft) */ repeating-linear-gradient(
+      115deg,
+      var(--metal-sheen2) 0px,
+      var(--metal-sheen2) 2px,
+      transparent 2px,
+      transparent 10px
+    ),
+    /* vertical light band to mimic metal sheen */
+      linear-gradient(
+        90deg,
+        transparent 0%,
+        var(--metal-sheen1) 50%,
+        transparent 100%
+      ),
+    /* base steel gradient */
+      radial-gradient(1200px 800px at 50% -200px, #1d1f24 0%, transparent 60%),
+    linear-gradient(180deg, var(--metal-bg1), var(--metal-bg2));
+  background-blend-mode: soft-light, screen, multiply, normal;
+}
+
+/* soft vignette */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(
+    80% 60% at 50% 30%,
+    transparent 0%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+  pointer-events: none;
+}
+
+svg.lucide {
+  stroke: var(--stroke, #d1d5db);
+}
+
+:root {
+  --accent: #ffffff;
+  --accent-contrast: #000000;
+  --accent-r: 255;
+  --accent-g: 255;
+  --accent-b: 255;
+  /* sliders */
+  --bg-tint-alpha: 0.06; /* “Contrast” slider: color tint strength */
+  --bg-brightness: 0; /* “Brightness” slider: white overlay 0..0.30 */
+}
+
+/* helpers for buttons/accents */
+.accent-btn {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border-color: color-mix(in oklab, var(--accent) 30%, black);
+}
+.accent-outline {
+  border-color: var(--accent);
+  color: var(--accent);
+}

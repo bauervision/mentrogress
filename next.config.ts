@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  /* config options here */
+const config: NextConfig = {
+  output: "export", // enables `next export` -> static hosting
+  // images: { unoptimized: true }, // uncomment if you add <Image>
 };
-
-export default nextConfig;
+export default config;
