@@ -1,7 +1,7 @@
 "use client";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/providers/AuthProvider";
-import AppShell from "@/components/AppShell";
+import AppLayout from "@/components/AppLayout";
 import LiftOnMount from "@/components/LiftOnMount";
 import WeighInQuickCard from "@/components/WeighInQuickCard";
 import WeighInNudge from "@/components/WeighInNudge";
@@ -11,7 +11,7 @@ export default function TodayClient() {
 
   return (
     <ProtectedRoute>
-      <AppShell>
+      <AppLayout>
         <LiftOnMount>
           <main className="p-4 max-w-md mx-auto">
             <header className="flex items-center justify-between mb-4">
@@ -39,7 +39,7 @@ export default function TodayClient() {
             </div>
           </main>
         </LiftOnMount>
-      </AppShell>
+      </AppLayout>
     </ProtectedRoute>
   );
 }

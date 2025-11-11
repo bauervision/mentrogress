@@ -1,12 +1,10 @@
 "use client";
 
 import { Tab } from "./Tab";
-import ToneLoader from "./ToneLoader";
 
-export default function AppShell({ children }: { children: React.ReactNode }) {
+export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-dvh flex flex-col">
-      <ToneLoader />
       {/* brightness (white) */}
       <div
         className="fixed inset-0 z-0 pointer-events-none"

@@ -31,9 +31,7 @@ export function readProfile(): Profile {
 }
 
 export function writeProfileMerge(patch: Partial<Profile>): Profile {
-  if (typeof window === "undefined") return empty();
-  const current = readProfile();
-  const merged: Profile = { ...current, ...patch, updatedAt: Date.now() };
+  const merged = { ...readProfile(), ...patch, updatedAt: Date.now() };
   localStorage.setItem(KEY, JSON.stringify(merged));
   return merged;
 }

@@ -1,12 +1,11 @@
 "use client";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import AppShell from "@/components/AppShell";
+import AppLayout from "@/components/AppLayout";
 import LiftOnMount from "@/components/LiftOnMount";
 import MiniToast from "@/components/MiniToast";
 import { useEffect, useState } from "react";
 import {
   readProfile,
-  writeProfile,
   type Profile,
   onTrackInfo,
   kgToLb,
@@ -42,7 +41,7 @@ export default function ProfileClient() {
 
   return (
     <ProtectedRoute>
-      <AppShell>
+      <AppLayout>
         <LiftOnMount>
           <main className="p-4 max-w-md mx-auto space-y-3">
             {toast && <MiniToast text={toast} />}
@@ -257,7 +256,7 @@ export default function ProfileClient() {
             </button>
           </main>
         </LiftOnMount>
-      </AppShell>
+      </AppLayout>
     </ProtectedRoute>
   );
 }

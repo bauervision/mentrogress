@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/providers/AuthProvider";
+import ToneLoader from "@/components/ToneLoader";
 
 export const metadata: Metadata = {
   title: "Mentrogress",
@@ -15,6 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-black text-white">
+        <ToneLoader />
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

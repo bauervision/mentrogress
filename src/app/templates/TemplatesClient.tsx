@@ -1,6 +1,6 @@
 "use client";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import AppShell from "@/components/AppShell";
+import AppLayout from "@/components/AppLayout";
 import LiftOnMount from "@/components/LiftOnMount";
 import { useEffect, useState } from "react";
 import {
@@ -189,7 +189,7 @@ export default function TemplatesClient() {
 
   return (
     <ProtectedRoute>
-      <AppShell>
+      <AppLayout>
         <LiftOnMount>
           <main className="p-4 max-w-md mx-auto">
             <header className="flex items-center justify-between mb-4">
@@ -462,7 +462,7 @@ export default function TemplatesClient() {
             {toast && <MiniToast text={toast} />}
           </main>
         </LiftOnMount>
-      </AppShell>
+      </AppLayout>
     </ProtectedRoute>
   );
 }

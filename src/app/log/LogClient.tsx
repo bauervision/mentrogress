@@ -1,12 +1,12 @@
 "use client";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import AppShell from "@/components/AppShell";
+import AppLayout from "@/components/AppLayout";
 import LiftOnMount from "@/components/LiftOnMount";
 
 export default function LogClient() {
   return (
     <ProtectedRoute>
-      <AppShell>
+      <AppLayout>
         <LiftOnMount>
           <main className="p-4 max-w-md mx-auto">
             <h2 className="text-xl font-semibold mb-3 accent-outline">Log</h2>
@@ -15,7 +15,7 @@ export default function LogClient() {
             </p>
           </main>
         </LiftOnMount>
-      </AppShell>
+      </AppLayout>
     </ProtectedRoute>
   );
 }

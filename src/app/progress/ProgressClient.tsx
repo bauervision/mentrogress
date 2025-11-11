@@ -1,12 +1,12 @@
 "use client";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import AppShell from "@/components/AppShell";
+import AppLayout from "@/components/AppLayout";
 import LiftOnMount from "@/components/LiftOnMount";
 
 export default function ProgressClient() {
   return (
     <ProtectedRoute>
-      <AppShell>
+      <AppLayout>
         <LiftOnMount>
           <main className="p-4 max-w-md mx-auto">
             <h2 className="text-xl font-semibold mb-3 accent-outline">
@@ -17,7 +17,7 @@ export default function ProgressClient() {
             </p>
           </main>
         </LiftOnMount>
-      </AppShell>
+      </AppLayout>
     </ProtectedRoute>
   );
 }
