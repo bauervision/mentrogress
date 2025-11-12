@@ -1,15 +1,36 @@
 "use client";
-import Link from "next/link";
 
-export function Tab({ href, label }: { href: string; label: string }) {
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+export function Tab({
+  href,
+  label,
+  before,
+  active,
+}: {
+  href: string;
+  label?: string;
+  before?: React.ReactNode;
+  active: boolean;
+}) {
   return (
-    <li>
+    <li className="relative h-14">
+      {/* tiny active indicator ABOVE the tab */}
+      {active && (
+        <span
+          className="absolute -top-0.5 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full"
+          style={{ backgroundColor: "var(--accent)" }}
+        />
+      )}
+
       <Link
         href={href}
-        prefetch={false}
-        className="block px-3 py-3 text-center hover:bg-white/5 focus:bg-white/10"
+        aria-current={active ? "page" : undefined}
+        className="h-full flex items-center justify-center gap-1"
       >
-        {label}
+        {before}
+        {label && <span>{label}</span>}
       </Link>
     </li>
   );

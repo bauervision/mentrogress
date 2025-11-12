@@ -12,33 +12,53 @@ import {
 } from "@/lib/logs";
 import { gatekeepSet } from "@/lib/gatekeeper";
 import GateBanner from "./GateBanner";
-import { Pencil, Trash2, Check, X } from "lucide-react";
+import {
+  Pencil,
+  Trash2,
+  Check,
+  X,
+  CheckCircle2,
+  ChevronDown,
+} from "lucide-react";
 import Sparkline from "./Sparkline";
 
-const isoToday = () => new Date().toISOString().slice(0, 10);
+const isoToday = () => {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 10);
+};
 
 export default function SetEntry({
   exerciseId,
   label,
   recentSessionsForExercise = 0,
+  onSaved,
 }: {
   exerciseId: string;
   label: string;
   recentSessionsForExercise?: number;
+  onSaved?: (saved: {
+    isoDate: string;
+    weightKg: number;
+    reps: number;
+  }) => void;
 }) {
   const units = readProfile().unitSystem ?? "imperial";
   const [w, setW] = useState("");
   const [r, setR] = useState("");
-  const [date, setDate] = useState(isoToday());
   const [v, setV] = useState(0); // refresh tick
+  const [collapsed, setCollapsed] = useState(false);
+  const [lastSummary, setLastSummary] = useState<string>("");
+  const [showRecent, setShowRecent] = useState(false);
+  const today = isoToday();
 
   const best = useMemo(
-    () => bestBefore(exerciseId, date),
-    [exerciseId, date, v]
+    () => bestBefore(exerciseId, today),
+    [exerciseId, today, v]
   );
   const last = useMemo(
-    () => lastSetBefore(exerciseId, date),
-    [exerciseId, date, v]
+    () => lastSetBefore(exerciseId, today),
+    [exerciseId, today, v]
   );
 
   const verdict = useMemo(() => {
@@ -59,15 +79,78 @@ export default function SetEntry({
     const weightKg = units === "imperial" ? lbToKg(Number(w)) : Number(w);
     const reps = Number(r) || 0;
     if (!weightKg || !reps) return;
-    addSet(exerciseId, { isoDate: date, weightKg, reps });
+    const today = isoToday();
+    addSet(exerciseId, { isoDate: today, weightKg, reps });
     setR(""); // keep weight handy
     setV((x) => x + 1);
+
+    const wtDisp =
+      units === "imperial"
+        ? `${Math.round(kgToLb(weightKg))} lb`
+        : `${Math.round(weightKg)} kg`;
+    setLastSummary(`${wtDisp} × ${reps} on ${today}`);
+    setCollapsed(true);
+    onSaved?.({ isoDate: today, weightKg, reps });
   }
 
   const recent = useMemo(
     () => listSetsAsc(exerciseId).slice().reverse().slice(0, 6),
     [exerciseId, v]
   );
+
+  if (collapsed) {
+    return (
+      <div className="rounded-xl border border-white/10 bg-white/5 p-3 space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="text-sm font-medium flex items-center gap-2">
+            <CheckCircle2
+              className="w-5 h-5"
+              style={{ color: "var(--accent)" }}
+            />
+            {label}
+          </div>
+          <button
+            className="rounded border px-2 py-1 text-xs"
+            style={{ borderColor: "var(--stroke)" }}
+            onClick={() => setCollapsed(false)}
+          >
+            Edit
+          </button>
+        </div>
+
+        <div className="text-xs opacity-80">Completed: {lastSummary}</div>
+
+        {/* Accordion trigger */}
+        {!!recent.length && (
+          <>
+            <button
+              onClick={() => setShowRecent((s) => !s)}
+              className="w-full rounded-lg border px-2 py-1 text-left text-xs flex items-center justify-between"
+              style={{ borderColor: "var(--stroke)" }}
+            >
+              <span className="opacity-70">Recent sets</span>
+              <ChevronDown
+                className={`w-4 h-4 transition-transform ${
+                  showRecent ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            {showRecent && (
+              <div className="mt-2">
+                <RecentList
+                  exerciseId={exerciseId}
+                  items={recent}
+                  units={units}
+                  onChange={() => setV((x) => x + 1)}
+                />
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-xl border border-white/10 bg-white/5 p-3 space-y-2">
@@ -95,12 +178,6 @@ export default function SetEntry({
 
       <div className="grid grid-cols-3 gap-2">
         <input
-          type="date"
-          className="rounded-xl px-3 py-2 bg-black/40 border border-white/10"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-        />
-        <input
           className="rounded-xl px-3 py-2 bg-black/40 border border-white/10"
           placeholder={units === "imperial" ? "Weight (lb)" : "Weight (kg)"}
           inputMode="decimal"
@@ -114,22 +191,41 @@ export default function SetEntry({
           value={r}
           onChange={(e) => setR(e.target.value)}
         />
+
+        <button
+          onClick={saveSet}
+          className="accent-btn w-full rounded-xl px-3 py-2 font-medium"
+        >
+          Save set
+        </button>
       </div>
 
-      <button
-        onClick={saveSet}
-        className="accent-btn w-full rounded-xl px-3 py-2 font-medium"
-      >
-        Save set
-      </button>
-
       {!!recent.length && (
-        <RecentList
-          exerciseId={exerciseId}
-          items={recent}
-          units={units}
-          onChange={() => setV(v + 1)}
-        />
+        <>
+          <button
+            onClick={() => setShowRecent((s) => !s)}
+            className="w-full rounded-lg border px-2 py-1 text-left text-xs flex items-center justify-between"
+            style={{ borderColor: "var(--stroke)" }}
+          >
+            <span className="opacity-70">Recent sets (newest first)</span>
+            <ChevronDown
+              className={`w-4 h-4 transition-transform ${
+                showRecent ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+
+          {showRecent && (
+            <div className="mt-2">
+              <RecentList
+                exerciseId={exerciseId}
+                items={recent}
+                units={units}
+                onChange={() => setV((x) => x + 1)}
+              />
+            </div>
+          )}
+        </>
       )}
     </div>
   );
@@ -151,11 +247,9 @@ function RecentList({
   const [editing, setEditing] = useState<string | null>(null);
   const [wEdit, setWEdit] = useState("");
   const [rEdit, setREdit] = useState("");
-  const [dEdit, setDEdit] = useState("");
 
   function startEdit(it: SetEntryLog) {
     setEditing(it.id);
-    setDEdit(it.isoDate);
     setWEdit(
       units === "imperial"
         ? String(Math.round(kgToLb(it.weightKg)))
@@ -170,7 +264,6 @@ function RecentList({
     const weightKg =
       units === "imperial" ? lbToKg(Number(wEdit)) : Number(wEdit);
     updateSet(exerciseId, id, {
-      isoDate: dEdit,
       weightKg,
       reps: Number(rEdit) || 0,
     });
@@ -207,12 +300,6 @@ function RecentList({
             className="grid grid-cols-[1fr_auto_auto] gap-2 items-center"
           >
             <div className="grid grid-cols-3 gap-2">
-              <input
-                type="date"
-                className="rounded px-2 py-1 bg-black/40 border border-white/10"
-                value={dEdit}
-                onChange={(e) => setDEdit(e.target.value)}
-              />
               <input
                 className="rounded px-2 py-1 bg-black/40 border border-white/10"
                 inputMode="decimal"

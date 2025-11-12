@@ -16,6 +16,7 @@ import Link from "next/link";
 import MiniToast from "@/components/MiniToast";
 import { ICON_OPTIONS, IconForName } from "@/lib/iconForName";
 import IconPicker from "@/components/IconPicker";
+import { safeStorage } from "@/lib/safeStorage";
 
 export default function TemplatesClient() {
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -32,7 +33,7 @@ export default function TemplatesClient() {
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(LIST_OPEN_KEY);
+      const raw = safeStorage.get(LIST_OPEN_KEY);
       if (raw != null) setListOpen(raw === "1");
     } catch {}
   }, []);
@@ -41,7 +42,7 @@ export default function TemplatesClient() {
     setListOpen((v) => {
       const next = !v;
       try {
-        localStorage.setItem(LIST_OPEN_KEY, next ? "1" : "0");
+        safeStorage.set(LIST_OPEN_KEY, next ? "1" : "0");
       } catch {}
       return next;
     });

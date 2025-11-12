@@ -10,6 +10,8 @@ import { allEntriesAsc } from "@/lib/logs";
 import { readTemplates, type Template } from "@/lib/templates";
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useActiveWorkout } from "@/providers/ActiveWorkoutProvider";
+import { safeStorage } from "@/lib/safeStorage";
 
 // simple 7d snapshot (kg·reps)
 const KG_TO_LB = 2.20462262185;
@@ -19,7 +21,7 @@ function unitLabel(units: "imperial" | "metric") {
 
 function readUnits(): "imperial" | "metric" {
   try {
-    const raw = localStorage.getItem("mentrogress_profile_v1");
+    const raw = safeStorage.get("mentrogress_profile_v1");
     const u = (raw ? JSON.parse(raw)?.unitSystem : "metric") as
       | "imperial"
       | "metric";
@@ -30,12 +32,13 @@ function readUnits(): "imperial" | "metric" {
 }
 
 const ROT_KEY = "mentrogress:lastTemplateIndex";
-const getLastIdx = () => Number(localStorage.getItem(ROT_KEY) ?? "-1");
-const setLastIdx = (i: number) => localStorage.setItem(ROT_KEY, String(i));
+const getLastIdx = () => Number(safeStorage.get(ROT_KEY) ?? "-1");
+const setLastIdx = (i: number) => safeStorage.set(ROT_KEY, String(i));
 
 export default function TodayClient() {
   const { logout } = useAuth();
   const [pickerOpen, setPickerOpen] = useState(false);
+  const { active, start } = useActiveWorkout();
 
   const templates = useMemo<Template[]>(
     () => readTemplates(),
@@ -58,11 +61,9 @@ export default function TodayClient() {
   }, [templates]);
 
   function startTemplateByIndex(i: number) {
-    if (i < 0 || i >= templates.length) return;
-    setLastIdx(i);
     const t = templates[i];
-    // Pass template id for preselection (safe if /log ignores).
-    window.location.href = `/log?template=${encodeURIComponent(t.id)}`;
+    start(t.id); // persist selection + timestamp
+    window.location.href = `/log`; // no need to pass ?template= anymore
   }
 
   const units = readUnits();
@@ -100,7 +101,14 @@ export default function TodayClient() {
             >
               {/* Header */}
               <header className="flex items-center justify-between mb-4">
-                <h2 className="accent-outline text-xl font-semibold">Today</h2>
+                <h2
+                  className="justify-self-start text-3xl accent-outline"
+                  style={{
+                    fontFamily: "var(--font-brand), system-ui, sans-serif",
+                  }}
+                >
+                  Today
+                </h2>
                 <div className="flex items-center gap-3">
                   <Link
                     href="/templates"
@@ -206,7 +214,7 @@ export default function TodayClient() {
                   className="select-none pointer-events-none text-center
                text-7xl md:text-6xl leading-none tracking-wide"
                   style={{
-                    fontFamily: "var(--font-brand), system-ui, sans-serif",
+                    fontFamily: "var(--font-brand2), system-ui, sans-serif",
                   }}
                 >
                   Mentrogress

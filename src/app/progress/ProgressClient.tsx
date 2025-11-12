@@ -13,6 +13,7 @@ import {
 } from "@/lib/progress";
 import { useMemo, useSyncExternalStore } from "react";
 import { readProfile } from "@/lib/profile";
+import { safeStorage } from "@/lib/safeStorage";
 
 // ---- units helpers ----
 type Units = "metric" | "imperial";
@@ -28,7 +29,7 @@ function useProfileVersion() {
         window.removeEventListener("mentrogress:profile", handler);
       };
     },
-    () => Number(localStorage.getItem("mentrogress_profile_v1:version") || "0"),
+    () => Number(safeStorage.get("mentrogress_profile_v1:version") || "0"),
     () => 0
   );
 }
@@ -62,7 +63,7 @@ function useLocalStorageVersion() {
         window.removeEventListener("mentrogress:logs", handler);
       };
     },
-    () => Number(localStorage.getItem("mentrogress_logs_v1:version") || "0"),
+    () => Number(safeStorage.get("mentrogress_logs_v1:version") || "0"),
     () => 0
   );
 }
@@ -115,7 +116,14 @@ export default function ProgressClient() {
         <LiftOnMount>
           <main className="p-4 max-w-xl mx-auto space-y-4">
             <header className="flex items-end justify-between">
-              <h2 className="text-xl font-semibold accent-outline">Progress</h2>
+              <h2
+                className="justify-self-start text-3xl accent-outline"
+                style={{
+                  fontFamily: "var(--font-brand), system-ui, sans-serif",
+                }}
+              >
+                Progress
+              </h2>
               <p className="text-xs opacity-70">Last 28 days</p>
             </header>
 

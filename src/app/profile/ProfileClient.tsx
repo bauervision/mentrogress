@@ -19,6 +19,7 @@ import ToggleButton from "@/components/ToggleButton";
 import DatePicker from "@/components/DatePicker";
 import TonePicker from "@/components/TonePicker";
 import { Save } from "lucide-react";
+import { DangerZoneAllData } from "@/components/DangerZoneAllData";
 
 export default function ProfileClient() {
   const [p, setP] = useState<Profile>(readProfile());
@@ -49,7 +50,12 @@ export default function ProfileClient() {
 
             {/* Header with sticky Save button */}
             <div className="flex items-center justify-between gap-2">
-              <h2 className="accent-outline text-xl font-semibold">
+              <h2
+                className="justify-self-start text-3xl accent-outline"
+                style={{
+                  fontFamily: "var(--font-brand), system-ui, sans-serif",
+                }}
+              >
                 Profile & Goals
               </h2>
               <button
@@ -259,6 +265,7 @@ export default function ProfileClient() {
               />
             </div>
             <TonePicker />
+            <DangerZoneAllData />
           </main>
         </LiftOnMount>
       </AppLayout>

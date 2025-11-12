@@ -2,12 +2,19 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/providers/AuthProvider";
 import ToneLoader from "@/components/ToneLoader";
-import { New_Amsterdam } from "next/font/google";
+import { New_Amsterdam, Yesteryear } from "next/font/google";
+import { ActiveWorkoutProvider } from "@/providers/ActiveWorkoutProvider";
 
 const newAmsterdam = New_Amsterdam({
   weight: "400",
   subsets: ["latin"],
   variable: "--font-brand",
+});
+
+const yesterYear = Yesteryear({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-brand2",
 });
 
 export const metadata: Metadata = {
@@ -22,9 +29,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={newAmsterdam.variable}>
+      <body className={`${yesterYear.variable} ${newAmsterdam.variable}`}>
         <ToneLoader />
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <ActiveWorkoutProvider>{children}</ActiveWorkoutProvider>
+        </AuthProvider>
       </body>
     </html>
   );
