@@ -53,6 +53,14 @@ function readStore(): Store {
 function writeStore(s: Store) {
   if (typeof window === "undefined") return;
   localStorage.setItem(KEY, JSON.stringify(s));
+
+  // bump a lightweight version token + notify this tab
+  const verKey = KEY + ":version";
+  const next = (Number(localStorage.getItem(verKey) || "0") + 1).toString();
+  localStorage.setItem(verKey, next);
+  try {
+    window.dispatchEvent(new Event("mentrogress:logs"));
+  } catch {}
 }
 
 function sortChronoAsc(a: SetEntryLog, b: SetEntryLog) {
@@ -143,4 +151,23 @@ export function bestBefore(
   return best
     ? { weightKg: best.weightKg, reps: best.reps, isoDate: best.isoDate }
     : null;
+}
+
+export function listAllAsc(): { exerciseId: string; entries: SetEntryLog[] }[] {
+  const s = readStore();
+  return Object.entries(s).map(([exerciseId, arr]) => ({
+    exerciseId,
+    entries: (arr || []).slice().sort(sortChronoAsc),
+  }));
+}
+
+export function allEntriesAsc(): (SetEntryLog & { exerciseId: string })[] {
+  const s = readStore();
+  const out: (SetEntryLog & { exerciseId: string })[] = [];
+  for (const [exerciseId, arr] of Object.entries(s)) {
+    for (const row of (arr || []).slice().sort(sortChronoAsc)) {
+      out.push({ ...row, exerciseId });
+    }
+  }
+  return out;
 }

@@ -19,12 +19,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         }}
       />
 
-      <div className="flex-1">{children}</div>
+      <div className="flex-1 flex flex-col">{children}</div>
 
       {/* mobile bottom nav */}
       <nav
         id="bottom-nav"
-        className="sticky bottom-0 inset-x-0 z-10 border-t border-white/10 bg-black/70 backdrop-blur supports-backdrop-filter:bg-black/55"
+        className="sticky bottom-0 inset-x-0 z-10 border-t border-white/10
+                bg-black/70 backdrop-blur supports-backdrop-filter:bg-black/55 h-14"
       >
         <ul className="mx-auto grid max-w-md grid-cols-4 text-sm">
           <Tab href="/today" label="Today" />

@@ -18,6 +18,7 @@ import {
 import ToggleButton from "@/components/ToggleButton";
 import DatePicker from "@/components/DatePicker";
 import TonePicker from "@/components/TonePicker";
+import { Save } from "lucide-react";
 
 export default function ProfileClient() {
   const [p, setP] = useState<Profile>(readProfile());
@@ -46,9 +47,20 @@ export default function ProfileClient() {
           <main className="p-4 max-w-md mx-auto space-y-3">
             {toast && <MiniToast text={toast} />}
 
-            <h2 className="accent-outline text-xl font-semibold">
-              Profile & Goals
-            </h2>
+            {/* Header with sticky Save button */}
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="accent-outline text-xl font-semibold">
+                Profile & Goals
+              </h2>
+              <button
+                onClick={save}
+                aria-label="Save profile"
+                title="Save profile"
+                className="accent-btn rounded-xl p-3"
+              >
+                <Save className="w-5 h-5 stroke-black!" />
+              </button>
+            </div>
 
             {/* Units toggle */}
             <div className="rounded-xl border border-white/10 bg-white/5 p-2 flex">
@@ -247,13 +259,6 @@ export default function ProfileClient() {
               />
             </div>
             <TonePicker />
-
-            <button
-              onClick={save}
-              className="accent-btn w-full rounded-xl px-3 py-2 bg-white text-black font-medium"
-            >
-              Save Profile
-            </button>
           </main>
         </LiftOnMount>
       </AppLayout>

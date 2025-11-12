@@ -189,11 +189,6 @@ export default function TonePicker() {
           className="w-full"
         />
       </label>
-
-      <div className="rounded-lg border border-white/10 p-2 text-xs opacity-80">
-        Contrast controls the strength of the color wash. Brightness lifts the
-        metal base. Set contrast to 0 for a neutral gray theme.
-      </div>
     </div>
   );
 }

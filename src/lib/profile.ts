@@ -33,6 +33,12 @@ export function readProfile(): Profile {
 export function writeProfileMerge(patch: Partial<Profile>): Profile {
   const merged = { ...readProfile(), ...patch, updatedAt: Date.now() };
   localStorage.setItem(KEY, JSON.stringify(merged));
+  try {
+    const verKey = "mentrogress_profile_v1:version";
+    const next = (Number(localStorage.getItem(verKey) || "0") + 1).toString();
+    localStorage.setItem(verKey, next);
+    window.dispatchEvent(new Event("mentrogress:profile"));
+  } catch {}
   return merged;
 }
 
