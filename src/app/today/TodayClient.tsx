@@ -5,7 +5,7 @@ import AppLayout from "@/components/AppLayout";
 import LiftOnMount from "@/components/LiftOnMount";
 import WeighInQuickCard from "@/components/WeighInQuickCard";
 import WeighInNudge from "@/components/WeighInNudge";
-
+import { useRouter } from "next/navigation";
 import { allEntriesAsc } from "@/lib/logs";
 import { readTemplates, type Template } from "@/lib/templates";
 import { useMemo, useState } from "react";
@@ -36,6 +36,7 @@ const getLastIdx = () => Number(safeStorage.get(ROT_KEY) ?? "-1");
 const setLastIdx = (i: number) => safeStorage.set(ROT_KEY, String(i));
 
 export default function TodayClient() {
+  const router = useRouter();
   const { logout } = useAuth();
   const [pickerOpen, setPickerOpen] = useState(false);
   const { active, start } = useActiveWorkout();
@@ -62,10 +63,11 @@ export default function TodayClient() {
 
   function startTemplateByIndex(i: number) {
     const t = templates[i];
-    start(t.id); // persist selection + timestamp
-    window.location.href = `/log`; // no need to pass ?template= anymore
-  }
+    if (!t) return;
 
+    start(t.id);
+    router.push("/log"); // ✅ keep this
+  }
   const units = readUnits();
   const { vol7d, days7d } = useMemo(() => {
     const all = allEntriesAsc();
@@ -150,6 +152,7 @@ export default function TodayClient() {
                       >
                         Start {suggestedName}
                       </button>
+
                       <button
                         onClick={() => setPickerOpen(true)}
                         className="rounded-xl px-3 py-2 border text-sm"

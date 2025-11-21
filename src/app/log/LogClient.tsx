@@ -62,7 +62,7 @@ export default function LogClient() {
   const router = useRouter();
 
   const paramTemplateId = params.get("template") || "";
-  const allTemplates = useMemo(() => readTemplates(), []);
+  const allTemplates: Template[] = useMemo(() => readTemplates(), []);
   const units = readProfile().unitSystem ?? "imperial";
 
   // Active workout provider
@@ -301,14 +301,13 @@ export default function LogClient() {
                     </div>
                     <button
                       onClick={() => {
+                        const summaryTemplate: Template | null =
+                          activeTemplate ?? allTemplates[0] ?? null;
+
                         setSummaryData({
                           sets: lastSession.sets,
-                          title:
-                            activeTemplate?.name ??
-                            allTemplates[0]?.name ??
-                            "Workout",
-                          iconKey:
-                            activeTemplate?.iconKey ?? allTemplates[0]?.iconKey,
+                          title: summaryTemplate?.name ?? "Workout",
+                          iconKey: summaryTemplate?.iconKey,
                           duration: "—",
                         });
                         setSummaryOpen(true);
