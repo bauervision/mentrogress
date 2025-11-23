@@ -17,6 +17,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     [templates, active?.templateId]
   );
 
+  // icon should show only when a workout is actually running
+  const hasActiveRunning = !!activeTemplate && active.isRunning;
+
   // If provider points to a missing/deleted template, clear it so the nav flips back to "Log"
   useEffect(() => {
     if (active?.templateId && !activeTemplate) end();
@@ -50,17 +53,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <ul className="mx-auto grid max-w-md grid-cols-4 text-sm relative">
           <Tab href="/today" label="Today" active={is("/today")} />
 
-          {activeTemplate ? (
+          {hasActiveRunning ? (
             <li className="relative">
               <Link
                 href="/log"
                 className="flex h-14 items-center justify-center"
-                aria-label={`Log — ${activeTemplate.name}`}
+                aria-label={`Log — ${activeTemplate!.name}`}
               >
                 <span className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-black/30">
                   <IconForName
-                    name={activeTemplate.name}
-                    iconKey={activeTemplate.iconKey}
+                    name={activeTemplate!.name}
+                    iconKey={activeTemplate!.iconKey}
                     className="w-5 h-5 opacity-90"
                   />
                 </span>

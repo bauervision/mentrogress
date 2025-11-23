@@ -17,6 +17,7 @@ export type ActiveWorkout = {
 
 export type ActiveWorkoutCtx = {
   active: ActiveWorkout;
+  selectTemplate: (templateId: string) => void;
   start: (templateId: string) => void; // start or switch & start
   pause: () => void;
   resume: () => void;
@@ -51,30 +52,28 @@ export function ActiveWorkoutProvider({
 }: {
   children: React.ReactNode;
 }) {
+  // src/providers/ActiveWorkoutProvider.tsx
+
   const [active, setActive] = useState<ActiveWorkout>(() => {
+    const blank: ActiveWorkout = {
+      templateId: null,
+      isRunning: false,
+      startedAt: null,
+      elapsedBeforeMs: 0,
+    };
+
     if (typeof window === "undefined") {
-      return {
-        templateId: null,
-        isRunning: false,
-        startedAt: null,
-        elapsedBeforeMs: 0,
-      };
-    }
-    try {
-      const raw = JSON.parse(localStorage.getItem(KEY) || "null");
-      const norm = normalize(raw);
-      localStorage.setItem(KEY, JSON.stringify(norm)); // write back normalized
-      return norm;
-    } catch {
-      const blank: ActiveWorkout = {
-        templateId: null,
-        isRunning: false,
-        startedAt: null,
-        elapsedBeforeMs: 0,
-      };
-      localStorage.setItem(KEY, JSON.stringify(blank));
       return blank;
     }
+
+    try {
+      // 🔥 Full wipe of any previous active session on app load
+      localStorage.setItem(KEY, JSON.stringify(blank));
+    } catch {
+      // ignore storage errors
+    }
+
+    return blank;
   });
 
   // persist on change
@@ -98,6 +97,20 @@ export function ActiveWorkoutProvider({
   const api = useMemo<ActiveWorkoutCtx>(
     () => ({
       active,
+
+      // 🔹 just choose a template, don't start the clock
+      selectTemplate: (templateId: string) =>
+        setActive((prev) => ({
+          templateId,
+          isRunning: false,
+          startedAt: null,
+          elapsedBeforeMs:
+            prev.templateId === templateId
+              ? numOrZero(prev.elapsedBeforeMs)
+              : 0,
+        })),
+
+      // 🔸 keep start() as "select + start running"
       start: (templateId: string) =>
         setActive((prev) => ({
           templateId,
@@ -108,6 +121,7 @@ export function ActiveWorkoutProvider({
               ? numOrZero(prev.elapsedBeforeMs)
               : 0,
         })),
+
       pause: () =>
         setActive((prev) => {
           if (!prev.isRunning || prev.startedAt == null) return prev;
@@ -121,11 +135,13 @@ export function ActiveWorkoutProvider({
               (Number.isFinite(add) ? Math.max(0, add) : 0),
           };
         }),
+
       resume: () =>
         setActive((prev) => {
           if (!prev.templateId || prev.isRunning) return prev;
           return { ...prev, isRunning: true, startedAt: Date.now() };
         }),
+
       end: () =>
         setActive({
           templateId: null,
@@ -133,6 +149,7 @@ export function ActiveWorkoutProvider({
           startedAt: null,
           elapsedBeforeMs: 0,
         }),
+
       elapsedMs: computeElapsed,
     }),
     [active]

@@ -39,7 +39,7 @@ export default function TodayClient() {
   const router = useRouter();
   const { logout } = useAuth();
   const [pickerOpen, setPickerOpen] = useState(false);
-  const { active, start } = useActiveWorkout();
+  const { selectTemplate } = useActiveWorkout();
 
   const templates = useMemo<Template[]>(
     () => readTemplates(),
@@ -65,8 +65,8 @@ export default function TodayClient() {
     const t = templates[i];
     if (!t) return;
 
-    start(t.id);
-    router.push("/log"); // ✅ keep this
+    selectTemplate(t.id);
+    router.push("/log");
   }
   const units = readUnits();
   const { vol7d, days7d } = useMemo(() => {

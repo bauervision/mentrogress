@@ -1,13 +1,24 @@
-"use client";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/providers/AuthProvider";
+// app/page.tsx
+import { Suspense } from "react";
+import HomeGateClient from "./HomeGateClient";
 
-export default function Home() {
-  const { user } = useAuth();
-  const router = useRouter();
-  useEffect(() => {
-    router.replace(user ? "/today" : "/login");
-  }, [user, router]);
-  return null;
+export default function Page() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-300">
+          <div className="text-center space-y-2">
+            <div className="text-lg font-semibold tracking-wide">
+              Mentrogress initializing...
+            </div>
+            <div className="text-xs text-slate-400">
+              Loading your workout data…
+            </div>
+          </div>
+        </div>
+      }
+    >
+      <HomeGateClient />
+    </Suspense>
+  );
 }

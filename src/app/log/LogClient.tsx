@@ -66,7 +66,8 @@ export default function LogClient() {
   const units = readProfile().unitSystem ?? "imperial";
 
   // Active workout provider
-  const { active, start, pause, resume, end, elapsedMs } = useActiveWorkout();
+  const { active, start, pause, resume, end, elapsedMs, selectTemplate } =
+    useActiveWorkout();
 
   // Derive current template from provider (truth source)
   const activeTemplate: Template | null = useMemo(() => {
@@ -79,11 +80,8 @@ export default function LogClient() {
   useEffect(() => {
     if (paramTemplateId) {
       const t = allTemplates.find((x) => x.id === paramTemplateId);
-      if (t && active?.templateId !== t.id) start(t.id);
-      // scrub the query to a clean /log url
+      if (t && active?.templateId !== t.id) selectTemplate(t.id); // 🔹 no auto-start
       router.replace("/log");
-    } else if (!active?.templateId) {
-      setPickerOpen(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paramTemplateId]);
@@ -91,7 +89,7 @@ export default function LogClient() {
   // Re-render footer time each second while template active
   const [, setTick] = useState(0);
   useEffect(() => {
-    if (!active?.templateId) return;
+    if (!active?.templateId || !active.isRunning) return;
     const id = setInterval(() => setTick((x) => x + 1), 1000);
     return () => clearInterval(id);
   }, [active?.templateId, active?.isRunning]);
@@ -164,7 +162,7 @@ export default function LogClient() {
   function startTemplateByIndex(i: number) {
     const t = allTemplates[i];
     if (!t) return;
-    start(t.id);
+    selectTemplate(t.id); // 🔹 select only, don't run
     setEnded(false);
     setPickerOpen(false);
   }
@@ -221,25 +219,46 @@ export default function LogClient() {
                   <div className="text-3xl font-semibold tracking-tight">
                     {fmtDuration(elapsedMs())}
                   </div>
-                  {!active?.isRunning ? (
+
+                  <div className="flex items-center gap-2">
+                    {/* Start / Pause */}
+                    {!active?.isRunning ? (
+                      <button
+                        onClick={() =>
+                          active?.templateId
+                            ? resume()
+                            : start(activeTemplate.id)
+                        }
+                        className="rounded-xl px-3 py-2 border text-sm"
+                        style={{ borderColor: "var(--stroke)" }}
+                      >
+                        ▶︎ Start
+                      </button>
+                    ) : (
+                      <button
+                        onClick={pause}
+                        className="rounded-xl px-3 py-2 border text-sm"
+                        style={{ borderColor: "var(--stroke)" }}
+                      >
+                        ❚❚ Pause
+                      </button>
+                    )}
+
+                    {/* ⏹ Stop (full bail) */}
                     <button
-                      onClick={() =>
-                        active?.templateId ? resume() : start(activeTemplate.id)
-                      }
-                      className="rounded-xl px-3 py-2 border text-sm"
+                      onClick={() => {
+                        // full bail from this session: clear provider state and local cache
+                        setEnded(false);
+                        setSummaryOpen(false);
+                        setSummaryData(null);
+                        end();
+                      }}
+                      className="rounded-xl px-3 py-2 border text-sm opacity-80 hover:opacity-100"
                       style={{ borderColor: "var(--stroke)" }}
                     >
-                      ▶︎ Start
+                      ⏹ Stop
                     </button>
-                  ) : (
-                    <button
-                      onClick={pause}
-                      className="rounded-xl px-3 py-2 border text-sm"
-                      style={{ borderColor: "var(--stroke)" }}
-                    >
-                      ❚❚ Pause
-                    </button>
-                  )}
+                  </div>
                 </div>
               </section>
             )}
@@ -387,16 +406,17 @@ export default function LogClient() {
               onClose={() => setSummaryOpen(false)}
             />
           )}
-
-          {/* Template picker (same UX as Today) */}
-          {pickerOpen && (
-            <TemplatePickerDialog
-              templates={allTemplates}
-              onClose={() => setPickerOpen(false)}
-              onPick={(i) => startTemplateByIndex(i)}
-            />
-          )}
         </LiftOnMount>
+
+        {/* Template picker (same UX as Today) */}
+        {pickerOpen && (
+          <TemplatePickerDialog
+            templates={allTemplates}
+            onClose={() => setPickerOpen(false)}
+            onPick={(i) => startTemplateByIndex(i)}
+            currentTemplateId={activeTemplate?.id ?? null}
+          />
+        )}
       </AppLayout>
     </ProtectedRoute>
   );
@@ -407,56 +427,84 @@ function TemplatePickerDialog({
   templates,
   onClose,
   onPick,
+  currentTemplateId,
 }: {
   templates: Template[];
   onClose: () => void;
   onPick: (index: number) => void;
+  currentTemplateId?: string | null;
 }) {
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/90 p-4">
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 backdrop-blur-sm p-4">
       <div
-        className="w-full max-w-sm rounded-2xl border bg-(--surface)"
+        className="w-full max-w-md rounded-2xl border bg-(--surface) shadow-2xl accent-outline overflow-hidden"
         style={{ borderColor: "var(--stroke)" }}
       >
+        {/* Header */}
         <div
-          className="flex items-center justify-between px-3 py-2 border-b"
+          className="flex items-center justify-between px-4 py-3 border-b bg-white/3"
           style={{ borderColor: "var(--stroke)" }}
         >
-          <div className="text-sm font-medium">Choose a template</div>
+          <div className="text-sm font-semibold tracking-wide">
+            Choose a template
+          </div>
           <button
             onClick={onClose}
-            className="text-sm opacity-70 hover:opacity-100"
+            className="text-xs uppercase tracking-wide opacity-70 hover:opacity-100"
           >
             Close
           </button>
         </div>
 
+        {/* List */}
         <ul className="max-h-72 overflow-auto py-1">
-          {templates.map((t, i) => (
-            <li key={t.id}>
-              <button
-                onClick={() => {
-                  onPick(i);
-                  onClose();
-                }}
-                className="w-full text-left px-3 py-2 hover:bg-white/5"
-              >
-                <div className="font-medium">{t.name}</div>
-                {t.exercises?.length ? (
-                  <div className="text-xs opacity-70">
-                    {t.exercises.length} exercises
+          {templates.map((t, i) => {
+            const isActive = currentTemplateId && currentTemplateId === t.id;
+            return (
+              <li key={t.id}>
+                <button
+                  onClick={() => {
+                    onPick(i);
+                    onClose();
+                  }}
+                  className={[
+                    "w-full text-left px-4 py-3 flex items-center justify-between gap-3 transition-colors",
+                    "hover:bg-white/5",
+                    isActive
+                      ? "bg-white/5 border-l-4 border-[var(--accent)]"
+                      : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                >
+                  <div>
+                    <div className="font-medium text-sm">{t.name}</div>
+                    {t.exercises?.length ? (
+                      <div className="text-xs opacity-70">
+                        {t.exercises.length} exercises
+                      </div>
+                    ) : null}
                   </div>
-                ) : null}
-              </button>
-            </li>
-          ))}
+                  {isActive && (
+                    <span
+                      className="text-[10px] px-2 py-1 rounded-full border"
+                      style={{ borderColor: "var(--accent)" }}
+                    >
+                      Current
+                    </span>
+                  )}
+                </button>
+              </li>
+            );
+          })}
           {!templates.length && (
-            <li className="px-3 py-2 text-sm opacity-70">No templates yet.</li>
+            <li className="px-4 py-3 text-sm opacity-70">No templates yet.</li>
           )}
         </ul>
 
+        {/* Footer */}
         <div
-          className="px-3 py-2 border-t flex justify-end gap-2"
+          className="px-4 py-3 border-t flex justify-end gap-2 bg-black/30"
           style={{ borderColor: "var(--stroke)" }}
         >
           <Link
@@ -468,7 +516,7 @@ function TemplatePickerDialog({
           </Link>
           <button
             onClick={onClose}
-            className="rounded-xl px-3 py-2 text-sm opacity-80"
+            className="rounded-xl px-3 py-2 text-sm opacity-80 hover:opacity-100"
           >
             Cancel
           </button>
