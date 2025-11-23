@@ -1,6 +1,6 @@
 "use client";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-
+import { useRouter } from "next/navigation";
 type User = { email: string } | null;
 type AuthCtx = {
   user: User;
@@ -16,6 +16,7 @@ const EMAIL = "mike@bauer.com";
 const PASS = "pl,PL<";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   // sync init (prevents redirect before we read storage)
   const initialUser: User = useMemo(() => {
     if (typeof window === "undefined") return null;
@@ -54,6 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   function logout() {
     localStorage.removeItem(KEY);
     setUser(null);
+    router.replace("/"); // always go back to the gate
   }
 
   return (
