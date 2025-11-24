@@ -1,5 +1,6 @@
 // src/providers/ActiveWorkoutProvider.tsx
 "use client";
+import { storageKey } from "@/lib/storageKeys";
 import React, {
   createContext,
   useContext,
@@ -25,7 +26,7 @@ export type ActiveWorkoutCtx = {
   elapsedMs: () => number; // compute "now"
 };
 
-const KEY = "mentrogress_active_workout_v1";
+const KEY = storageKey("active_workout");
 const Ctx = createContext<ActiveWorkoutCtx | null>(null);
 
 // ---- helpers ----

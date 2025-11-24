@@ -24,7 +24,7 @@ import {
   isoToday,
   KG2LB,
 } from "./logHelpers";
-import { Clock3, Layers } from "lucide-react";
+import { Clock3 } from "lucide-react";
 
 export default function LogClient() {
   const params = useSearchParams();

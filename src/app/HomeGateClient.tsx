@@ -4,6 +4,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
+import { BRAND_NAME } from "@/lib/brand";
 
 export default function HomeGateClient() {
   const { user, authReady } = useAuth();
@@ -21,7 +22,7 @@ export default function HomeGateClient() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-100">
       <div className="text-center space-y-2">
-        <p className="text-lg font-semibold tracking-wide">Mentrogress</p>
+        <p className="text-lg font-semibold tracking-wide">{BRAND_NAME}</p>
         <p className="text-xs text-slate-400">Warming up your last session…</p>
       </div>
     </div>

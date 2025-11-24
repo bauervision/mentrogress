@@ -118,9 +118,10 @@ export default function TimerPanel() {
           <span className="opacity-70">Timer</span>
           <select
             value={mode}
-            onChange={(e) =>
-              handleReset() || setMode(e.target.value as TimerMode)
-            }
+            onChange={(e) => {
+              handleReset();
+              setMode(e.target.value as TimerMode);
+            }}
             className="rounded-full border border-white/10 bg-black/70 px-3 py-1 text-xs outline-none"
           >
             <option value="stopwatch">Stopwatch</option>

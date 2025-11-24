@@ -21,11 +21,25 @@ import TonePicker from "@/components/TonePicker";
 import { LogOut, Save } from "lucide-react";
 import { DangerZoneAllData } from "@/components/DangerZoneAllData";
 import { useAuth } from "@/providers/AuthProvider";
+import { storageKey } from "@/lib/storageKeys";
 
 export default function ProfileClient() {
   const { logout } = useAuth();
   const [p, setP] = useState<Profile>(readProfile());
   const [toast, setToast] = useState<string | null>(null);
+  const [showProfileNudge, setShowProfileNudge] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const profileKey = storageKey("profile");
+    const profileRaw = window.localStorage.getItem(profileKey);
+
+    if (!profileRaw) {
+      // They’ve seen Profile once but still have no saved profile
+      setShowProfileNudge(true);
+    }
+  }, []);
 
   // local UI fields for imperial inputs
   const { ft, inch } = p.heightCm ? cmToFtIn(p.heightCm) : { ft: "", inch: "" };
@@ -81,6 +95,16 @@ export default function ProfileClient() {
                 </div>
               </div>
             </div>
+
+            {showProfileNudge && (
+              <div className="mb-3 rounded-xl border border-amber-400/60 bg-amber-500/10 px-3 py-2 text-xs text-amber-100">
+                <div className="font-medium">Complete your profile</div>
+                <p className="mt-0.5 opacity-80">
+                  Add your stats and goals so BauerFit can give you better
+                  guidance on load, recovery, and progress.
+                </p>
+              </div>
+            )}
 
             {/* Units toggle */}
             <div className="rounded-xl border border-white/10 bg-white/5 p-2 flex">

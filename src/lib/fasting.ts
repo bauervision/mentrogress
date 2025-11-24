@@ -1,7 +1,9 @@
 // lib/fasting.ts
 "use client";
 
-const FASTING_KEY = "mentrogress:fasting";
+import { storageKey } from "./storageKeys";
+
+const FASTING_KEY = storageKey("fasting");
 
 export type FastingState = {
   startedAtIso: string | null;

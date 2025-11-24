@@ -1,14 +1,9 @@
-// src/lib/logs.ts
-export type SetEntryLog = {
-  id: string; // stable id for edit/remove
-  isoDate: string; // YYYY-MM-DD
-  weightKg: number;
-  reps: number;
-  createdAt: number; // tiebreaker inside same day
-};
+import { storageKey } from "./storageKeys";
+import { SetEntryLog, Store } from "./types";
 
-type Store = Record<string, SetEntryLog[]>;
-const KEY = "mentrogress_logs_v1";
+// src/lib/logs.ts
+
+const KEY = storageKey("logs");
 
 function uid() {
   return (
@@ -59,7 +54,7 @@ function writeStore(s: Store) {
   const next = (Number(localStorage.getItem(verKey) || "0") + 1).toString();
   localStorage.setItem(verKey, next);
   try {
-    window.dispatchEvent(new Event("mentrogress:logs"));
+    window.dispatchEvent(new Event(storageKey("logs")));
   } catch {}
 }
 

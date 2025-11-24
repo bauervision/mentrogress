@@ -1,6 +1,7 @@
 "use client";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { storageKey } from "@/lib/storageKeys";
 type User = { email: string } | null;
 type AuthCtx = {
   user: User;
@@ -11,7 +12,7 @@ type AuthCtx = {
 
 const Ctx = createContext<AuthCtx | null>(null);
 
-const KEY = "mentrogress_auth_v1";
+const KEY = storageKey("auth");
 const EMAIL = "mike@bauer.com";
 const PASS = "pl,PL<";
 

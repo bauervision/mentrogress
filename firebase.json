@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "mentrogress",
+    "site": "bauerfit",
     "public": "out",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
   }

@@ -1,3 +1,5 @@
+import { storageKey } from "./storageKeys";
+
 export type UnitSystem = "imperial" | "metric";
 
 export type WeighInDay = "Sun" | "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat";
@@ -16,7 +18,7 @@ export type Profile = {
   toneBrightness?: number; // NEW
 };
 
-const KEY = "mentrogress_profile_v1";
+const KEY = storageKey("profile");
 
 export function readProfile(): Profile {
   if (typeof window === "undefined") return empty();
@@ -34,10 +36,10 @@ export function writeProfileMerge(patch: Partial<Profile>): Profile {
   const merged = { ...readProfile(), ...patch, updatedAt: Date.now() };
   localStorage.setItem(KEY, JSON.stringify(merged));
   try {
-    const verKey = "mentrogress_profile_v1:version";
+    const verKey = storageKey("profile_v1");
     const next = (Number(localStorage.getItem(verKey) || "0") + 1).toString();
     localStorage.setItem(verKey, next);
-    window.dispatchEvent(new Event("mentrogress:profile"));
+    window.dispatchEvent(new Event(storageKey("profile")));
   } catch {}
   return merged;
 }

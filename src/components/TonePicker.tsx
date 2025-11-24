@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { readProfile, writeProfileMerge } from "@/lib/profile";
+import { storageKey } from "@/lib/storageKeys";
 
 /** ---- Preset swatches (tweak freely) ---- */
 const PRESETS = [
@@ -63,7 +64,7 @@ function contrastOn(hex: string) {
   return L > 0.6 ? "#000000" : "#ffffff";
 }
 function emitTone() {
-  window.dispatchEvent(new Event("mentrogress:tone"));
+  window.dispatchEvent(new Event(storageKey("tone")));
 }
 function applyCSS(hex: string, tintAlpha: number, brightness: number) {
   const [r, g, b] = hexToRgb(hex);

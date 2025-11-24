@@ -1,3 +1,5 @@
+import { storageKey } from "./storageKeys";
+
 export type Exercise = {
   id: string; // e.g., "squat"
   name: string; // "Back Squat"
@@ -18,7 +20,7 @@ export type WarmupItem = {
   text: string; // e.g., "100 jumping jacks"
 };
 
-const KEY = "mentrogress_templates_v1";
+const KEY = storageKey("templates");
 
 export function readTemplates(): Template[] {
   if (typeof window === "undefined") return [];

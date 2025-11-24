@@ -1,5 +1,8 @@
-export type WeighIn = { isoDate: string; weightKg: number; note?: string };
-const KEY = "mentrogress_weighins_v1";
+import { readProfile, kgToLb } from "./profile";
+import { storageKey } from "./storageKeys";
+import { TrackStatus, WeighIn } from "./types";
+
+const KEY = storageKey("weighins");
 
 export function listWeighIns(): WeighIn[] {
   if (typeof window === "undefined") return [];
@@ -28,10 +31,6 @@ export function weeksBetween(aISO: string, bISO: string) {
   const b = new Date(bISO + "T00:00:00");
   return (Number(b) - Number(a)) / (1000 * 60 * 60 * 24 * 7);
 }
-
-import { readProfile, kgToLb } from "./profile";
-
-export type TrackStatus = "green" | "amber" | "red";
 
 export function onTrackStatus(): { status: TrackStatus; msg: string } | null {
   const p = readProfile();

@@ -2,6 +2,7 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { readProfile } from "@/lib/profile";
+import { storageKey } from "@/lib/storageKeys";
 
 function hexToRgb(hex: string): [number, number, number] {
   const h = hex.replace("#", "");
@@ -45,12 +46,12 @@ export default function ToneLoader() {
     const onTone = () => applyFromProfile();
     const onFocus = () => applyFromProfile();
 
-    window.addEventListener("mentrogress:tone", onTone);
+    window.addEventListener(storageKey("tone"), onTone);
     window.addEventListener("focus", onFocus);
     document.addEventListener("visibilitychange", onFocus);
 
     return () => {
-      window.removeEventListener("mentrogress:tone", onTone);
+      window.removeEventListener(storageKey("tone"), onTone);
       window.removeEventListener("focus", onFocus);
       document.removeEventListener("visibilitychange", onFocus);
     };

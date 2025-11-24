@@ -1,8 +1,9 @@
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { listSetsAsc, removeSet } from "@/lib/logs";
 import { ChevronDown, AlertTriangle } from "lucide-react";
+import { storageKey } from "@/lib/storageKeys";
 
-const ROT_KEY = "mentrogress_logs_v1:version";
+const ROT_KEY = storageKey("logs");
 
 function isoToday() {
   return new Date().toISOString().slice(0, 10);
@@ -14,10 +15,10 @@ function useLogsVersion() {
     (on) => {
       const handler = () => on();
       window.addEventListener("storage", handler);
-      window.addEventListener("mentrogress:logs", handler);
+      window.addEventListener(storageKey("logs"), handler);
       return () => {
         window.removeEventListener("storage", handler);
-        window.removeEventListener("mentrogress:logs", handler);
+        window.removeEventListener(storageKey("logs"), handler);
       };
     },
     () => Number(localStorage.getItem(ROT_KEY) || "0"),
@@ -66,7 +67,7 @@ export function DangerZoneToday({
     try {
       localStorage.setItem(ROT_KEY, String(Date.now()));
       // custom same-tab event so subscribers re-render immediately
-      window.dispatchEvent(new Event("mentrogress:logs"));
+      window.dispatchEvent(new Event(storageKey("logs")));
     } catch {}
 
     setBusy(false);

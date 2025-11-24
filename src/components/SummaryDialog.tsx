@@ -1,3 +1,4 @@
+import { BRAND_NAME } from "@/lib/brand";
 import { IconForName } from "@/lib/iconForName";
 import { SavedSet } from "@/lib/types";
 
@@ -47,7 +48,7 @@ export function SummaryDialog({
           >
             <div>
               <div className="text-[11px] font-semibold uppercase tracking-wide text-sky-300/80">
-                Mentrogress
+                {BRAND_NAME}
               </div>
               <div className="text-xl font-extrabold">Session summary</div>
             </div>

@@ -4,6 +4,7 @@ import { AuthProvider } from "@/providers/AuthProvider";
 import ToneLoader from "@/components/ToneLoader";
 import { New_Amsterdam, Yesteryear } from "next/font/google";
 import { ActiveWorkoutProvider } from "@/providers/ActiveWorkoutProvider";
+import { BRAND_NAME } from "@/lib/brand";
 
 const newAmsterdam = New_Amsterdam({
   weight: "400",
@@ -18,7 +19,7 @@ const yesterYear = Yesteryear({
 });
 
 export const metadata: Metadata = {
-  title: "Mentrogress",
+  title: `${BRAND_NAME}`,
   description: "Measured intensity. Intelligent progress.",
 };
 

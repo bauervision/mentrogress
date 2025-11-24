@@ -8,11 +8,13 @@ import WeighInNudge from "@/components/WeighInNudge";
 import { useRouter } from "next/navigation";
 import { allEntriesAsc } from "@/lib/logs";
 import { readTemplates, type Template } from "@/lib/templates";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useActiveWorkout } from "@/providers/ActiveWorkoutProvider";
 import { safeStorage } from "@/lib/safeStorage";
 import { Layers } from "lucide-react";
+import { BRAND_NAME } from "@/lib/brand";
+import { storageKey } from "@/lib/storageKeys";
 
 // simple 7d snapshot (kg·reps)
 const KG_TO_LB = 2.20462262185;
@@ -22,7 +24,7 @@ function unitLabel(units: "imperial" | "metric") {
 
 function readUnits(): "imperial" | "metric" {
   try {
-    const raw = safeStorage.get("mentrogress_profile_v1");
+    const raw = safeStorage.get(storageKey("_profile_v1"));
     const u = (raw ? JSON.parse(raw)?.unitSystem : "metric") as
       | "imperial"
       | "metric";
@@ -32,12 +34,24 @@ function readUnits(): "imperial" | "metric" {
   }
 }
 
-const ROT_KEY = "mentrogress:lastTemplateIndex";
+const ROT_KEY = storageKey("lastTemplateIndex");
 const getLastIdx = () => Number(safeStorage.get(ROT_KEY) ?? "-1");
 const setLastIdx = (i: number) => safeStorage.set(ROT_KEY, String(i));
 
 export default function TodayClient() {
   const router = useRouter();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // Check for a saved profile blob in localStorage
+    const profileRaw = window.localStorage.getItem(storageKey("profile"));
+
+    if (!profileRaw) {
+      // No profile yet: nudge user to fill it out
+      router.replace("/profile");
+    }
+  }, [router]);
 
   const [pickerOpen, setPickerOpen] = useState(false);
   const { selectTemplate } = useActiveWorkout();
@@ -150,7 +164,7 @@ export default function TodayClient() {
                   </>
                 ) : (
                   <>
-                    <p className="opacity-90 mb-2">Welcome to Mentrogress.</p>
+                    <p className="opacity-90 mb-2">Welcome to {BRAND_NAME}.</p>
                     <p className="text-sm opacity-70 mb-3">
                       Create your first workout template to get started.
                     </p>
@@ -212,6 +226,8 @@ export default function TodayClient() {
                     WebkitMaskSize: "contain",
                     maskSize: "contain",
                   }}
+                  aria-label={`${BRAND_NAME} logo`}
+                  role="img"
                 />
               </div>
               {/* Weigh-in helpers at the bottom */}

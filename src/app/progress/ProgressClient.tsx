@@ -14,6 +14,7 @@ import {
 import { useMemo, useSyncExternalStore } from "react";
 import { readProfile } from "@/lib/profile";
 import { safeStorage } from "@/lib/safeStorage";
+import { storageKey } from "@/lib/storageKeys";
 
 // ---- units helpers ----
 type Units = "metric" | "imperial";
@@ -23,13 +24,13 @@ function useProfileVersion() {
     (onChange) => {
       const handler = () => onChange();
       window.addEventListener("storage", handler);
-      window.addEventListener("mentrogress:profile", handler);
+      window.addEventListener(storageKey(":profile"), handler);
       return () => {
         window.removeEventListener("storage", handler);
-        window.removeEventListener("mentrogress:profile", handler);
+        window.removeEventListener(storageKey(":profile"), handler);
       };
     },
-    () => Number(safeStorage.get("mentrogress_profile_v1:version") || "0"),
+    () => Number(safeStorage.get("_profile_v1:version") || "0"),
     () => 0
   );
 }
@@ -57,13 +58,13 @@ function useLocalStorageVersion() {
     (onChange) => {
       const handler = () => onChange();
       window.addEventListener("storage", handler);
-      window.addEventListener("mentrogress:logs", handler);
+      window.addEventListener(":logs", handler);
       return () => {
         window.removeEventListener("storage", handler);
-        window.removeEventListener("mentrogress:logs", handler);
+        window.removeEventListener(":logs", handler);
       };
     },
-    () => Number(safeStorage.get("mentrogress_logs_v1:version") || "0"),
+    () => Number(safeStorage.get("_logs_v1:version") || "0"),
     () => 0
   );
 }

@@ -17,6 +17,7 @@ import MiniToast from "@/components/MiniToast";
 import { IconForName } from "@/lib/iconForName";
 import IconPicker from "@/components/IconPicker";
 import { safeStorage } from "@/lib/safeStorage";
+import { storageKey } from "@/lib/storageKeys";
 
 export default function TemplatesClient() {
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -27,7 +28,7 @@ export default function TemplatesClient() {
   const [justSaved, setJustSaved] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
-  const LIST_OPEN_KEY = "mentrogress_templates_list_open_v1";
+  const LIST_OPEN_KEY = storageKey("templates");
   const [listOpen, setListOpen] = useState<boolean>(false);
   const [iconKey, setIconKey] = useState<string | undefined>(undefined);
 

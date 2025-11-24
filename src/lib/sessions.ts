@@ -1,3 +1,5 @@
+import { storageKey } from "./storageKeys";
+
 // src/lib/sessions.ts
 export type Session = {
   id: string;
@@ -9,8 +11,8 @@ export type Session = {
   dayISO: string; // YYYY-MM-DD (from startedAt)
 };
 
-const KEY = "mentrogress_sessions_v1";
-const CUR = "mentrogress_current_session_id";
+const KEY = storageKey("sessions");
+const CUR = storageKey("_current_session_id");
 
 const uid = () =>
   globalThis.crypto?.randomUUID?.() ??
@@ -28,7 +30,7 @@ function writeAll(arr: Session[]) {
   if (typeof window === "undefined") return;
   localStorage.setItem(KEY, JSON.stringify(arr));
   // notify listeners
-  window.dispatchEvent(new Event("mentrogress:sessions"));
+  window.dispatchEvent(new Event(KEY));
 }
 
 export function startSession(opts: {

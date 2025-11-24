@@ -4,6 +4,8 @@ import { useState, useMemo } from "react";
 import { ChevronDown, Trash2 } from "lucide-react";
 import MiniToast from "@/components/MiniToast";
 import { safeStorage } from "@/lib/safeStorage";
+import { BRAND_NAME } from "@/lib/brand";
+import { storageKey } from "@/lib/storageKeys";
 
 export function DangerZoneAllData() {
   const [open, setOpen] = useState(false);
@@ -27,13 +29,13 @@ export function DangerZoneAllData() {
 
     // fire any custom events listeners might care about
     try {
-      window.dispatchEvent(new Event("mentrogress:profile"));
-      window.dispatchEvent(new Event("mentrogress:logs"));
-      window.dispatchEvent(new Event("mentrogress:sessions"));
+      window.dispatchEvent(new Event(storageKey("profile")));
+      window.dispatchEvent(new Event(storageKey("logs")));
+      window.dispatchEvent(new Event(storageKey("sessions")));
     } catch {}
 
     // toast + soft reload
-    setToast("All Mentrogress data cleared.");
+    setToast(`All ${BRAND_NAME} data cleared.`);
     setTimeout(() => {
       setToast(null);
       window.location.reload();
@@ -62,7 +64,7 @@ export function DangerZoneAllData() {
       {open && (
         <div className="mt-3 space-y-3">
           <p className="text-sm opacity-80">
-            This will permanently delete all local Mentrogress data — workouts,
+            This will permanently delete all local {BRAND_NAME} data — workouts,
             sets, templates, sessions, and profile preferences. There is no
             undo.
           </p>
