@@ -3,35 +3,27 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export function Tab({
-  href,
-  label,
-  before,
-  active,
-}: {
+type TabProps = {
   href: string;
-  label?: string;
-  before?: React.ReactNode;
+  label: string;
   active: boolean;
-}) {
-  return (
-    <li className="relative h-14">
-      {/* tiny active indicator ABOVE the tab */}
-      {active && (
-        <span
-          className="absolute -top-0.5 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full"
-          style={{ backgroundColor: "var(--accent)" }}
-        />
-      )}
+  icon: React.ReactNode;
+};
 
+export function Tab({ href, label, active, icon }: TabProps) {
+  return (
+    <li className="relative">
       <Link
         href={href}
-        aria-current={active ? "page" : undefined}
-        className="h-full flex items-center justify-center gap-1"
+        className="flex h-14 flex-col items-center justify-center gap-0.5 text-[11px] opacity-80 hover:opacity-100"
       >
-        {before}
-        {label && <span>{label}</span>}
+        <span className="inline-flex h-5 w-5 items-center justify-center">
+          {icon}
+        </span>
       </Link>
+      {active && (
+        <span className="absolute left-1/2 top-0 mt-1 h-0.5 w-6 -translate-x-1/2 rounded-full bg-(--accent)" />
+      )}
     </li>
   );
 }

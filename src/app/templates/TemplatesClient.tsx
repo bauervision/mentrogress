@@ -12,9 +12,9 @@ import {
   slugify,
   upsertTemplate,
 } from "@/lib/templates";
-import Link from "next/link";
+
 import MiniToast from "@/components/MiniToast";
-import { ICON_OPTIONS, IconForName } from "@/lib/iconForName";
+import { IconForName } from "@/lib/iconForName";
 import IconPicker from "@/components/IconPicker";
 import { safeStorage } from "@/lib/safeStorage";
 
@@ -28,7 +28,7 @@ export default function TemplatesClient() {
   const [toast, setToast] = useState<string | null>(null);
 
   const LIST_OPEN_KEY = "mentrogress_templates_list_open_v1";
-  const [listOpen, setListOpen] = useState<boolean>(true);
+  const [listOpen, setListOpen] = useState<boolean>(false);
   const [iconKey, setIconKey] = useState<string | undefined>(undefined);
 
   useEffect(() => {
@@ -194,7 +194,12 @@ export default function TemplatesClient() {
         <LiftOnMount>
           <main className="p-4 max-w-md mx-auto">
             <header className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold accent-outline">
+              <h2
+                className="justify-self-start text-3xl accent-outline"
+                style={{
+                  fontFamily: "var(--font-brand), system-ui, sans-serif",
+                }}
+              >
                 Templates
               </h2>
               <div className="flex items-center gap-3">
@@ -204,14 +209,8 @@ export default function TemplatesClient() {
                   aria-label="Create a new template"
                   title="Create a new template"
                 >
-                  New Template
+                  +New
                 </button>
-                <Link
-                  href="/today"
-                  className="accent-outline text-sm underline opacity-80"
-                >
-                  Done
-                </Link>
               </div>
             </header>
 

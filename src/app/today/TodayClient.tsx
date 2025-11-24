@@ -12,6 +12,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useActiveWorkout } from "@/providers/ActiveWorkoutProvider";
 import { safeStorage } from "@/lib/safeStorage";
+import { Layers } from "lucide-react";
 
 // simple 7d snapshot (kg·reps)
 const KG_TO_LB = 2.20462262185;
@@ -37,7 +38,7 @@ const setLastIdx = (i: number) => safeStorage.set(ROT_KEY, String(i));
 
 export default function TodayClient() {
   const router = useRouter();
-  const { logout } = useAuth();
+
   const [pickerOpen, setPickerOpen] = useState(false);
   const { selectTemplate } = useActiveWorkout();
 
@@ -111,21 +112,6 @@ export default function TodayClient() {
                 >
                   Today
                 </h2>
-                <div className="flex items-center gap-3">
-                  <Link
-                    href="/templates"
-                    className="rounded-xl px-3 py-1.5 border text-sm"
-                    style={{ borderColor: "var(--stroke)" }}
-                  >
-                    Templates
-                  </Link>
-                  <button
-                    onClick={logout}
-                    className="text-sm opacity-80 underline"
-                  >
-                    Logout
-                  </button>
-                </div>
               </header>
 
               {/* Daily CTA */}
@@ -213,15 +199,20 @@ export default function TodayClient() {
 
               {/* MIDDLE wordmark */}
               <div className="flex-1 flex items-center justify-center">
-                <h1
-                  className="select-none pointer-events-none text-center
-               text-7xl md:text-6xl leading-none tracking-wide"
+                <div
+                  className="select-none pointer-events-none h-40 w-40 md:h-40 md:w-40"
                   style={{
-                    fontFamily: "var(--font-brand2), system-ui, sans-serif",
+                    background: "var(--accent)", // same blue as your main button
+                    WebkitMaskImage: "url(/BF2.png)",
+                    maskImage: "url(/BF2.png)",
+                    WebkitMaskRepeat: "no-repeat",
+                    maskRepeat: "no-repeat",
+                    WebkitMaskPosition: "center",
+                    maskPosition: "center",
+                    WebkitMaskSize: "contain",
+                    maskSize: "contain",
                   }}
-                >
-                  Mentrogress
-                </h1>
+                />
               </div>
               {/* Weigh-in helpers at the bottom */}
               <WeighInNudge />

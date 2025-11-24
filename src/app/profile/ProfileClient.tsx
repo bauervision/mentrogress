@@ -18,10 +18,12 @@ import {
 import ToggleButton from "@/components/ToggleButton";
 import DatePicker from "@/components/DatePicker";
 import TonePicker from "@/components/TonePicker";
-import { Save } from "lucide-react";
+import { LogOut, Save } from "lucide-react";
 import { DangerZoneAllData } from "@/components/DangerZoneAllData";
+import { useAuth } from "@/providers/AuthProvider";
 
 export default function ProfileClient() {
+  const { logout } = useAuth();
   const [p, setP] = useState<Profile>(readProfile());
   const [toast, setToast] = useState<string | null>(null);
 
@@ -58,14 +60,26 @@ export default function ProfileClient() {
               >
                 Profile & Goals
               </h2>
-              <button
-                onClick={save}
-                aria-label="Save profile"
-                title="Save profile"
-                className="accent-btn rounded-xl p-3"
-              >
-                <Save className="w-5 h-5 stroke-black!" />
-              </button>
+              <div className="flex gap-3">
+                <button
+                  onClick={save}
+                  aria-label="Save profile"
+                  title="Save profile"
+                  className="accent-btn rounded-xl p-3"
+                >
+                  <Save className="w-5 h-5 stroke-black!" />
+                </button>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={logout}
+                    title="Logout"
+                    className="inline-flex items-center justify-center h-8 w-8 rounded-lg border border-white/10 bg-black/30 hover:opacity-100"
+                  >
+                    <LogOut className="h-4 w-4 opacity-90" />
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* Units toggle */}

@@ -20,85 +20,117 @@ export function SummaryDialog({
   const volDisp = units === "imperial" ? totalVolKg * 2.2046226218 : totalVolKg;
 
   return (
-    <div className="fixed inset-0 z-100 bg-black" style={{ height: "100dvh" }}>
+    <div
+      className="fixed inset-0 z-100 bg-black/80 backdrop-blur-sm"
+      style={{ height: "100dvh" }}
+    >
       <div className="absolute inset-0 flex">
-        <div className="relative w-full h-full max-w-[640px] mx-auto bg-(--surface) flex flex-col overflow-hidden md:rounded-2xl">
+        <div
+          className="relative mx-auto flex h-full w-full max-w-[640px] flex-col overflow-hidden border border-white/10 bg-black/60 shadow-2xl shadow-black/70 md:rounded-2xl"
+          style={{
+            background: "radial-gradient(circle at top, #0f172a, #020617)",
+          }}
+        >
           {/* BIG CORNER ICON */}
-          <div className="pointer-events-none absolute right-3 top-15 opacity-15">
+          <div className="pointer-events-none absolute right-3 top-16 opacity-15">
             <IconForName
               name={templateName}
               iconKey={templateIconKey}
-              className="w-28 h-28 md:w-36 md:h-36"
+              className="h-28 w-28 md:h-36 md:w-36"
             />
           </div>
 
           {/* Sticky header */}
           <div
-            className="accent-outline flex items-center justify-between px-4 py-3 border-b"
+            className="flex items-center justify-between border-b border-white/10 bg-black/60 px-4 py-3"
             style={{ paddingTop: "max(12px, env(safe-area-inset-top))" }}
           >
-            <div className="text-xl font-extrabold">Session Summary</div>
+            <div>
+              <div className="text-[11px] font-semibold uppercase tracking-wide text-sky-300/80">
+                Mentrogress
+              </div>
+              <div className="text-xl font-extrabold">Session summary</div>
+            </div>
             <button
               onClick={onClose}
-              className="text-sm opacity-70 hover:opacity-100"
+              className="rounded-full border border-white/20 bg-black/60 px-3 py-1 text-xs font-medium opacity-80 hover:opacity-100"
             >
               Close
             </button>
           </div>
 
           {/* Scrollable body */}
-          <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
-            <div className="grid gap-1 text-sm">
-              <div className="flex items-center gap-2">
-                <span className="opacity-70">Template:</span>
-
-                <span className="font-medium">{templateName}</span>
+          <div className="flex-1 space-y-4 overflow-y-auto px-4 py-3">
+            {/* Top meta row */}
+            <div className="grid gap-3 text-xs md:grid-cols-3">
+              <div className="rounded-xl border border-white/10 bg-black/50 px-3 py-2">
+                <div className="opacity-60">Template</div>
+                <div className="mt-0.5 text-sm font-semibold">
+                  {templateName}
+                </div>
               </div>
-              <div>
-                <span className="opacity-70">Duration:</span>{" "}
-                <span className="font-medium">{duration}</span>
+              <div className="rounded-xl border border-sky-400/50 bg-sky-500/10 px-3 py-2">
+                <div className="text-[11px] uppercase tracking-wide opacity-70">
+                  Duration
+                </div>
+                <div className="mt-0.5 text-sm font-semibold text-sky-100">
+                  {duration}
+                </div>
               </div>
-              <div>
-                <span className="opacity-70">Total volume:</span>{" "}
-                <span
-                  className="font-medium"
-                  style={{ color: "var(--accent)" }}
-                >
+              <div className="rounded-xl border border-emerald-400/50 bg-emerald-500/10 px-3 py-2">
+                <div className="text-[11px] uppercase tracking-wide opacity-70">
+                  Total volume
+                </div>
+                <div className="mt-0.5 text-sm font-semibold text-emerald-100">
                   {Math.round(volDisp).toLocaleString()}{" "}
                   {units === "imperial" ? "lb·reps" : "kg·reps"}
-                </span>
+                </div>
               </div>
             </div>
 
-            <div className="text-2xl font-medium pt-1">Sets</div>
-            <ul className="space-y-2">
-              {sets.map((s, i) => (
-                <li
-                  key={i}
-                  className="rounded-lg px-3 py-2 border accent-btn"
-                  style={{ borderColor: "var(--stroke)" }}
-                >
-                  <div className="text-[11px] opacity-60">{s.isoDate}</div>
-                  <div className="text-sm">
-                    <span className="font-medium text-xl">
-                      {units === "imperial"
-                        ? `${Math.round(s.weightKg * 2.2046226218)} lb`
-                        : `${Math.round(s.weightKg)} kg`}
-                    </span>
-                    <span className="opacity-70 text-xl"> × {s.reps}</span>
-                    <span className="opacity-60 ml-2">({s.exerciseId})</span>
-                  </div>
-                </li>
-              ))}
+            {/* Sets */}
+            <div className="pt-1">
+              <div className="flex items-center justify-between">
+                <div className="text-sm font-semibold uppercase tracking-wide opacity-70">
+                  Sets
+                </div>
+                <div className="text-[11px] opacity-60">
+                  {sets.length} set{sets.length === 1 ? "" : "s"}
+                </div>
+              </div>
 
+              <ul className="mt-2 space-y-2">
+                {sets.map((s, i) => (
+                  <li
+                    key={i}
+                    className="rounded-xl border border-white/10 bg-black/60 px-3 py-2"
+                  >
+                    <div className="flex items-center justify-between text-[11px] opacity-60">
+                      <span>{s.isoDate}</span>
+                      <span className="font-mono">{s.exerciseId}</span>
+                    </div>
+                    <div className="mt-1 flex items-baseline gap-2">
+                      <span className="text-xl font-semibold">
+                        {units === "imperial"
+                          ? `${Math.round(s.weightKg * 2.2046226218)} lb`
+                          : `${Math.round(s.weightKg)} kg`}
+                      </span>
+                      <span className="text-lg opacity-70">× {s.reps}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Footer button */}
+            <div className="pb-2 pt-1">
               <button
                 onClick={onClose}
-                className="rounded-xl px-3 py-2 border text-sm"
-                style={{ borderColor: "var(--stroke)" }}
+                className="flex w-full items-center justify-center rounded-xl border border-white/20 bg-white/5 px-3 py-2 text-sm font-medium hover:bg-white/10"
               >
                 Done
               </button>
-            </ul>
+            </div>
           </div>
         </div>
       </div>

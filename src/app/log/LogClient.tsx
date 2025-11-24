@@ -15,47 +15,16 @@ import { readProfile } from "@/lib/profile";
 import { useActiveWorkout } from "@/providers/ActiveWorkoutProvider";
 import { SummaryDialog } from "@/components/SummaryDialog";
 import { DangerZoneToday } from "@/components/DangerZoneToday";
-
-type SavedSet = {
-  exerciseId: string;
-  isoDate: string;
-  weightKg: number;
-  reps: number;
-};
-
-const isoToday = () => new Date().toISOString().slice(0, 10);
-const KG2LB = 2.2046226218;
-const fmtDuration = (ms: number) => {
-  const s = Math.max(0, Math.floor(ms / 1000));
-  const mm = String(Math.floor(s / 60)).padStart(2, "0");
-  const ss = String(s % 60).padStart(2, "0");
-  return `${mm}:${ss}`;
-};
-
-function gatherSessionSetsFor(template: Template | null, preferToday = true) {
-  if (!template) return { sets: [] as SavedSet[], date: null as string | null };
-
-  const byDate = new Map<string, SavedSet[]>();
-  for (const ex of template.exercises || []) {
-    for (const row of listSetsAsc(ex.id)) {
-      const arr = byDate.get(row.isoDate) ?? [];
-      arr.push({
-        exerciseId: ex.id,
-        isoDate: row.isoDate,
-        weightKg: row.weightKg,
-        reps: row.reps,
-      });
-      byDate.set(row.isoDate, arr);
-    }
-  }
-  const dates = Array.from(byDate.keys()).sort(); // asc
-  if (dates.length === 0) return { sets: [], date: null };
-  const today = isoToday();
-
-  const pick =
-    preferToday && byDate.has(today) ? today : dates[dates.length - 1];
-  return { sets: byDate.get(pick) ?? [], date: pick };
-}
+import TimerPanel from "@/components/TimerPanel";
+import { TemplatePickerDialog } from "./TemplatePickerDialog";
+import { SavedSet } from "@/lib/types";
+import {
+  fmtDuration,
+  gatherSessionSetsFor,
+  isoToday,
+  KG2LB,
+} from "./logHelpers";
+import { Clock3, Layers } from "lucide-react";
 
 export default function LogClient() {
   const params = useSearchParams();
@@ -65,6 +34,12 @@ export default function LogClient() {
   const allTemplates: Template[] = useMemo(() => readTemplates(), []);
   const units = readProfile().unitSystem ?? "imperial";
 
+  const [extraExercises, setExtraExercises] = useState<
+    { id: string; name: string }[]
+  >([]);
+  const [showAddExerciseDialog, setShowAddExerciseDialog] = useState(false);
+  const [newExerciseName, setNewExerciseName] = useState("");
+  const [showTimer, setShowTimer] = useState(false);
   // Active workout provider
   const { active, start, pause, resume, end, elapsedMs, selectTemplate } =
     useActiveWorkout();
@@ -99,6 +74,8 @@ export default function LogClient() {
     if (!activeTemplate) return [];
     const today = isoToday();
     const out: SavedSet[] = [];
+
+    // Regular template exercises
     for (const ex of activeTemplate.exercises || []) {
       for (const row of listSetsAsc(ex.id)) {
         if (row.isoDate === today) {
@@ -111,8 +88,23 @@ export default function LogClient() {
         }
       }
     }
+
+    // Extra exercises added for this workout
+    for (const ex of extraExercises) {
+      for (const row of listSetsAsc(ex.id)) {
+        if (row.isoDate === today) {
+          out.push({
+            exerciseId: ex.id,
+            isoDate: row.isoDate,
+            weightKg: row.weightKg,
+            reps: row.reps,
+          });
+        }
+      }
+    }
+
     return out;
-  }, [activeTemplate, active?.templateId]);
+  }, [activeTemplate, active?.templateId, extraExercises]);
 
   const totalVolumeKgReps = useMemo(
     () => todaysSets.reduce((a, s) => a + s.weightKg * s.reps, 0),
@@ -163,6 +155,7 @@ export default function LogClient() {
     const t = allTemplates[i];
     if (!t) return;
     selectTemplate(t.id); // 🔹 select only, don't run
+    setExtraExercises([]); // 🔹 reset extras for new workout
     setEnded(false);
     setPickerOpen(false);
   }
@@ -182,32 +175,47 @@ export default function LogClient() {
           <main className="p-4 max-w-md mx-auto space-y-4">
             {/* Header */}
             <header className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold accent-outline">Log</h2>
-              <div className="flex items-center justify-center gap-2">
-                {activeTemplate ? (
-                  <span
-                    className="inline-flex items-center gap-2 rounded-xl px-3 py-1 text-sm"
-                    style={{ borderColor: "var(--stroke)" }}
-                    title="Active template"
-                  >
-                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-black/30">
-                      <IconForName
-                        name={activeTemplate.name}
-                        iconKey={activeTemplate.iconKey}
-                        className="w-5 h-5 opacity-90"
-                      />
-                    </span>
-                    <span>{activeTemplate.name}</span>
-                  </span>
-                ) : null}
-                <Link
-                  href="/templates"
-                  className="text-sm opacity-80 underline"
+              <h2
+                className="justify-self-start text-3xl accent-outline"
+                style={{
+                  fontFamily: "var(--font-brand), system-ui, sans-serif",
+                }}
+              >
+                LOG
+              </h2>
+
+              {activeTemplate ? (
+                <span
+                  className="inline-flex items-center gap-2 rounded-xl px-3 py-1 text-sm"
+                  style={{ borderColor: "var(--stroke)" }}
+                  title="Active template"
                 >
-                  Templates
-                </Link>
-              </div>
+                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-black/30">
+                    <IconForName
+                      name={activeTemplate.name}
+                      iconKey={activeTemplate.iconKey}
+                      className="h-5 w-5 opacity-90"
+                    />
+                  </span>
+                  <span>{activeTemplate.name}</span>
+                </span>
+              ) : null}
+
+              {/* 🔹 Timer toggle button */}
+              <button
+                type="button"
+                onClick={() => setShowTimer((v) => !v)}
+                title={showTimer ? "Hide timer" : "Show timer"}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border bg-black/40 text-xs opacity-80 hover:opacity-100"
+                style={{
+                  borderColor: showTimer ? "var(--accent)" : "var(--stroke)",
+                }}
+              >
+                <Clock3 className="h-4 w-4" />
+              </button>
             </header>
+
+            {showTimer && <TimerPanel />}
 
             {/* Timer / controls */}
             {activeTemplate && (
@@ -251,6 +259,7 @@ export default function LogClient() {
                         setEnded(false);
                         setSummaryOpen(false);
                         setSummaryData(null);
+                        setExtraExercises([]);
                         end();
                       }}
                       className="rounded-xl px-3 py-2 border text-sm opacity-80 hover:opacity-100"
@@ -292,6 +301,24 @@ export default function LogClient() {
                     </Link>
                   </div>
                 )}
+
+                {/* 🔹 Extra exercises added for this session */}
+                {extraExercises.map((ex) => (
+                  <SetEntry
+                    key={ex.id}
+                    exerciseId={ex.id}
+                    label={ex.name}
+                    recentSessionsForExercise={7}
+                  />
+                ))}
+
+                <button
+                  type="button"
+                  onClick={() => setShowAddExerciseDialog(true)}
+                  className="mt-2 rounded-full border border-sky-400/70 bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-100 hover:bg-sky-500/20"
+                >
+                  + Exercise
+                </button>
               </>
             ) : (
               <div
@@ -408,6 +435,62 @@ export default function LogClient() {
           )}
         </LiftOnMount>
 
+        {showAddExerciseDialog && (
+          <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 p-4">
+            <div className="w-full max-w-sm rounded-2xl border border-white/15 bg-black/90 p-4">
+              <h2 className="text-sm font-semibold">Add exercise</h2>
+              <p className="mt-1 text-xs opacity-70">
+                This exercise will be added to this workout. You can choose to
+                update the template after you finish.
+              </p>
+
+              <form
+                className="mt-3 space-y-3 text-xs"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const name = newExerciseName.trim();
+                  if (!name) return;
+                  setExtraExercises((prev) => [
+                    ...prev,
+                    { id: `extra-${Date.now()}`, name },
+                  ]);
+                  setNewExerciseName("");
+                  setShowAddExerciseDialog(false);
+                }}
+              >
+                <label className="flex flex-col gap-1">
+                  <span className="opacity-80">Exercise name</span>
+                  <input
+                    autoFocus
+                    value={newExerciseName}
+                    onChange={(e) => setNewExerciseName(e.target.value)}
+                    className="rounded-lg border border-white/10 bg-black/70 px-3 py-2 text-xs outline-none focus:border-sky-400/80"
+                  />
+                </label>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAddExerciseDialog(false);
+                      setNewExerciseName("");
+                    }}
+                    className="rounded-full border border-white/10 px-3 py-1"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="rounded-full border border-sky-400/70 bg-sky-500/10 px-3 py-1 font-medium text-sky-100 hover:bg-sky-500/20"
+                  >
+                    Add
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
         {/* Template picker (same UX as Today) */}
         {pickerOpen && (
           <TemplatePickerDialog
@@ -419,109 +502,5 @@ export default function LogClient() {
         )}
       </AppLayout>
     </ProtectedRoute>
-  );
-}
-
-/* ----- inline picker ----- */
-function TemplatePickerDialog({
-  templates,
-  onClose,
-  onPick,
-  currentTemplateId,
-}: {
-  templates: Template[];
-  onClose: () => void;
-  onPick: (index: number) => void;
-  currentTemplateId?: string | null;
-}) {
-  return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 backdrop-blur-sm p-4">
-      <div
-        className="w-full max-w-md rounded-2xl border bg-(--surface) shadow-2xl accent-outline overflow-hidden"
-        style={{ borderColor: "var(--stroke)" }}
-      >
-        {/* Header */}
-        <div
-          className="flex items-center justify-between px-4 py-3 border-b bg-white/3"
-          style={{ borderColor: "var(--stroke)" }}
-        >
-          <div className="text-sm font-semibold tracking-wide">
-            Choose a template
-          </div>
-          <button
-            onClick={onClose}
-            className="text-xs uppercase tracking-wide opacity-70 hover:opacity-100"
-          >
-            Close
-          </button>
-        </div>
-
-        {/* List */}
-        <ul className="max-h-72 overflow-auto py-1">
-          {templates.map((t, i) => {
-            const isActive = currentTemplateId && currentTemplateId === t.id;
-            return (
-              <li key={t.id}>
-                <button
-                  onClick={() => {
-                    onPick(i);
-                    onClose();
-                  }}
-                  className={[
-                    "w-full text-left px-4 py-3 flex items-center justify-between gap-3 transition-colors",
-                    "hover:bg-white/5",
-                    isActive
-                      ? "bg-white/5 border-l-4 border-[var(--accent)]"
-                      : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                >
-                  <div>
-                    <div className="font-medium text-sm">{t.name}</div>
-                    {t.exercises?.length ? (
-                      <div className="text-xs opacity-70">
-                        {t.exercises.length} exercises
-                      </div>
-                    ) : null}
-                  </div>
-                  {isActive && (
-                    <span
-                      className="text-[10px] px-2 py-1 rounded-full border"
-                      style={{ borderColor: "var(--accent)" }}
-                    >
-                      Current
-                    </span>
-                  )}
-                </button>
-              </li>
-            );
-          })}
-          {!templates.length && (
-            <li className="px-4 py-3 text-sm opacity-70">No templates yet.</li>
-          )}
-        </ul>
-
-        {/* Footer */}
-        <div
-          className="px-4 py-3 border-t flex justify-end gap-2 bg-black/30"
-          style={{ borderColor: "var(--stroke)" }}
-        >
-          <Link
-            href="/templates"
-            className="rounded-xl px-3 py-2 border text-sm"
-            style={{ borderColor: "var(--stroke)" }}
-          >
-            Manage Templates
-          </Link>
-          <button
-            onClick={onClose}
-            className="rounded-xl px-3 py-2 text-sm opacity-80 hover:opacity-100"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
   );
 }
